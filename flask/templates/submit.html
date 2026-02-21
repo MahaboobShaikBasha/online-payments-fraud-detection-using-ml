@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FraudShield — Result</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #06070f;
+      --surface: #0d0f1e;
+      --border: #1e2240;
+      --accent: #00e5ff;
+      --accent2: #ff3e6c;
+      --green: #00e5a0;
+      --text: #e8eaf6;
+      --muted: #6b7199;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 0;
+    }
+
+    .orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; z-index: 0; }
+    .orb-safe { width: 500px; height: 500px; background: var(--green); top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0; transition: opacity 0.8s; }
+    .orb-fraud { width: 500px; height: 500px; background: var(--accent2); top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0; transition: opacity 0.8s; }
+
+    .page {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 520px;
+      padding: 40px 24px;
+      display: flex; flex-direction: column; align-items: center; gap: 32px;
+    }
+
+    /* Badge */
+    .result-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      animation: popIn 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .badge-safe { background: rgba(0,229,160,0.12); border: 1px solid rgba(0,229,160,0.3); color: var(--green); }
+    .badge-fraud { background: rgba(255,62,108,0.12); border: 1px solid rgba(255,62,108,0.3); color: var(--accent2); }
+
+    /* Verdict ring */
+    .verdict-ring {
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      animation: popIn 0.6s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .ring-safe {
+      background: radial-gradient(circle, rgba(0,229,160,0.15) 0%, transparent 70%);
+      box-shadow: 0 0 0 1px rgba(0,229,160,0.2), 0 0 60px rgba(0,229,160,0.15);
+    }
+    .ring-fraud {
+      background: radial-gradient(circle, rgba(255,62,108,0.15) 0%, transparent 70%);
+      box-shadow: 0 0 0 1px rgba(255,62,108,0.2), 0 0 60px rgba(255,62,108,0.15);
+    }
+    .ring-safe::before, .ring-fraud::before {
+      content: '';
+      position: absolute; inset: -8px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255,255,255,0.08);
+      animation: spin 20s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Main text */
+    .verdict-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-align: center;
+      animation: fadeUp 0.5s 0.35s ease both;
+    }
+    .title-safe { color: var(--green); }
+    .title-fraud { color: var(--accent2); }
+
+    /* Probability card */
+    .prob-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 32px;
+      width: 100%;
+      animation: fadeUp 0.5s 0.45s ease both;
+    }
+    .prob-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .prob-bar-wrap {
+      background: rgba(255,255,255,0.06);
+      border-radius: 100px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .prob-bar {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .bar-safe { background: linear-gradient(90deg, #00e5a0, #00bfff); }
+    .bar-fraud { background: linear-gradient(90deg, #ff3e6c, #ff8c69); }
+
+    .prob-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .num-safe { color: var(--green); }
+    .num-fraud { color: var(--accent2); }
+    .prob-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Raw result */
+    .raw-result {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      width: 100%;
+      word-break: break-word;
+      animation: fadeUp 0.5s 0.55s ease both;
+    }
+    .raw-result .raw-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #3d4266;
+      margin-bottom: 4px;
+    }
+
+    /* Action buttons */
+    .actions {
+      display: flex; gap: 12px; width: 100%;
+      animation: fadeUp 0.5s 0.65s ease both;
+    }
+    .btn-primary {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--accent);
+      color: #06070f;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(0,229,255,0.15);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,229,255,0.3); }
+    .btn-secondary {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); }
+
+    @keyframes popIn { from { opacity:0; transform: scale(0.8); } to { opacity:1; transform: scale(1); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+  {% set is_fraud = '⚠' in prediction or 'Fraud' in prediction %}
+
+  <div class="orb {% if is_fraud %}orb-fraud{% else %}orb-safe{% endif %}" id="bgOrb"></div>
+
+  <div class="page">
+    <div class="result-badge {% if is_fraud %}badge-fraud{% else %}badge-safe{% endif %}">
+      <span>{% if is_fraud %}⚠ Fraud Detected{% else %}✓ Legitimate{% endif %}</span>
+    </div>
+
+    <div class="verdict-ring {% if is_fraud %}ring-fraud{% else %}ring-safe{% endif %}">
+      {% if is_fraud %}🚨{% else %}✅{% endif %}
+    </div>
+
+    <div class="verdict-title {% if is_fraud %}title-fraud{% else %}title-safe{% endif %}">
+      {% if is_fraud %}Suspicious Transaction{% else %}Transaction Cleared{% endif %}
+    </div>
+
+    <div class="prob-card">
+      <div class="prob-label">Fraud Probability Score</div>
+      <div class="prob-bar-wrap">
+        <div class="prob-bar {% if is_fraud %}bar-fraud{% else %}bar-safe{% endif %}" id="probBar" style="width:0%"></div>
+      </div>
+      <div class="prob-num {% if is_fraud %}num-fraud{% else %}num-safe{% endif %}" id="probNum">0%</div>
+      <div class="prob-sub">{% if is_fraud %}High risk — manual review recommended{% else %}Low risk — transaction appears legitimate{% endif %}</div>
+    </div>
+
+    <div class="raw-result">
+      <div class="raw-label">Model Output</div>
+      {{ prediction }}
+    </div>
+
+    <div class="actions">
+      <a href="/predict" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        New Analysis
+      </a>
+      <a href="/" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Home
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Extract probability from prediction string and animate bar
+    const prediction = {{ prediction | tojson }};
+    const match = prediction.match(/[\d.]+(?=%|\d\.\d{2})/);
+    let prob = 0;
+    if (match) {
+      let raw = parseFloat(match[0]);
+      prob = raw > 1 ? raw : raw * 100;
+    }
+
+    document.getElementById('bgOrb').style.opacity = '0.15';
+
+    setTimeout(() => {
+      document.getElementById('probBar').style.width = Math.min(prob, 100) + '%';
+      // Animate number
+      const el = document.getElementById('probNum');
+      let current = 0;
+      const target = prob;
+      const duration = 1200;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = target * eased;
+        el.textContent = current.toFixed(1) + '%';
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }, 600);
+  </script>
+</body>
+</html>

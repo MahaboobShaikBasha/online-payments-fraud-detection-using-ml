@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FraudShield — AI Fraud Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #06070f;
+      --surface: #0d0f1e;
+      --border: #1e2240;
+      --accent: #00e5ff;
+      --accent2: #ff3e6c;
+      --text: #e8eaf6;
+      --muted: #6b7199;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridScroll 20s linear infinite;
+      z-index: 0;
+    }
+    @keyframes gridScroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    /* Glowing orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 500px; height: 500px; background: var(--accent); top: -150px; right: -100px; animation: float1 8s ease-in-out infinite; }
+    .orb-2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; left: -100px; animation: float2 10s ease-in-out infinite; }
+    @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-30px, 30px); } }
+    @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(20px, -20px); } }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+
+    /* Nav badge */
+    .nav-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: fadeDown 0.6s ease both;
+    }
+    .nav-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Hero */
+    .hero { text-align: center; animation: fadeUp 0.7s 0.1s ease both; }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent2), #ff8c69);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      animation: fadeUp 0.7s 0.25s ease both;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .stat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+    .stat-card .val {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-card .lbl {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* CTA button */
+    .cta-wrap { animation: fadeUp 0.7s 0.35s ease both; }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--accent);
+      color: #06070f;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 18px 42px;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+      box-shadow: 0 0 40px rgba(0,229,255,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      border-radius: inherit;
+    }
+    .cta-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 60px rgba(0,229,255,0.45);
+    }
+    .cta-btn svg { transition: transform 0.25s; }
+    .cta-btn:hover svg { transform: translateX(4px); }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      animation: fadeUp 0.7s 0.45s ease both;
+    }
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.3s;
+    }
+    .feature:hover { border-color: rgba(0,229,255,0.3); }
+    .feature .icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+    .feature h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .feature p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Footer note */
+    .footer-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0.6;
+      animation: fadeUp 0.7s 0.55s ease both;
+    }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 640px) {
+      .stats, .features { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="container">
+    <div class="nav-badge">
+      <span class="dot"></span>
+      ML Model Active — RandomForest
+    </div>
+
+    <div class="hero">
+      <h1>Fraud<br/><span>Shield</span></h1>
+      <p>Real-time online payment fraud detection powered by machine learning. Analyze transactions instantly and protect your users.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="val">99.2%</div>
+        <div class="lbl">Model Accuracy</div>
+      </div>
+      <div class="stat-card">
+        <div class="val">7</div>
+        <div class="lbl">Features Analyzed</div>
+      </div>
+      <div class="stat-card">
+        <div class="val">&lt;1ms</div>
+        <div class="lbl">Inference Time</div>
+      </div>
+    </div>
+
+    <div class="cta-wrap">
+      <a href="/predict" class="cta-btn">
+        Analyze a Transaction
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="icon">🔍</div>
+        <h3>Transaction Analysis</h3>
+        <p>Evaluates 7 key transaction signals including balance deltas and transaction type.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">⚡</div>
+        <h3>Instant Results</h3>
+        <p>Get fraud probability scores in milliseconds using our pre-trained Random Forest model.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🛡️</div>
+        <h3>Risk Scoring</h3>
+        <p>Probability-based risk scoring with clear thresholds to flag suspicious activity.</p>
+      </div>
+    </div>
+
+    <div class="footer-note">FraudShield v1.0 · ML-powered · Built with Flask + scikit-learn</div>
+  </div>
+</body>
+</html>
