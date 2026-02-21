@@ -34,10 +34,6 @@ Model Accuracy: ~99%
 ![Home Page](screenshots/Home.png)
 ![Prediction](screenshots/Predict.png)
 
-=======
-![Prediction Page](screenshots/Predict.png)
->>>>>>> 97f7644 (Updated project documentation)
-
 ---
 
 ## ▶️ How to Run
