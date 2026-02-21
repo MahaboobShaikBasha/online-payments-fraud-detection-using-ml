@@ -32,7 +32,7 @@ Model Accuracy: ~99%
 ## 🖥️ Application Screenshots
 
 ![Home Page](screenshots/Home.png)
-![Legitamate Transaction](screenshots/Legitamate Transaction.png)
+![Legitamate Transaction](screenshots/LegitamateTransaction.png)
 
 ---
 
