@@ -32,7 +32,7 @@ Model Accuracy: ~99%
 ## 🖥️ Application Screenshots
 
 !Home Page](screenshots/Home.png)
-![Prediction](screenshots/Predict.png)
+!Prediction](screenshots/Predict.png)
 
 
 ---
